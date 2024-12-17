@@ -70,9 +70,9 @@ public class Main {
         JLabel label = new JLabel("Seleccione una opción:");
         panel.add(label, gbc);
 
-        String[] opciones = {"Básico", "Unir", "Concatenar", "Cerradura+", "Cerradura*", "Opcional",
+        String[] opciones = { "Básico", "Unir", "Concatenar", "Cerradura+", "Cerradura*", "Opcional",
                 "Union para analizador lexico", "Convertir AFN a AFD", "Probar analizador lexico",
-                "Visualizar AFN", "ER->AFN", "Salir"};
+                "Visualizar AFN", "ER->AFN",  "Salir" };
         JComboBox<String> comboBox = new JComboBox<>(opciones);
         panel.add(comboBox, gbc);
 
@@ -107,7 +107,7 @@ public class Main {
         JLabel label = new JLabel("Seleccione una opción:");
         panel.add(label, gbc);
 
-        String[] opciones = {"Descenso recursivo", "Volver"};
+        String[] opciones = { "Descenso recursivo", "Volver" };
         JComboBox<String> comboBox = new JComboBox<>(opciones);
         panel.add(comboBox, gbc);
 
@@ -142,7 +142,7 @@ public class Main {
         JLabel label = new JLabel("Seleccione una opción:");
         panel.add(label, gbc);
 
-        String[] opciones = {"Calculadora", "Matrices", "Volver"};
+        String[] opciones = { "Calculadora", "Volver" };
         JComboBox<String> comboBox = new JComboBox<>(opciones);
         panel.add(comboBox, gbc);
 
@@ -211,33 +211,54 @@ public class Main {
     }
 
     public static void realizarAccionBasica() {
-        String caracterInferior = JOptionPane.showInputDialog("Ingrese el caracter inferior:");
-        if (caracterInferior == null || caracterInferior.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Debe ingresar un caracter inferior.");
-            return;
-        }
-
-        String caracterSuperior = JOptionPane.showInputDialog("Ingrese el caracter superior:");
-        if (caracterSuperior == null || caracterSuperior.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Debe ingresar un caracter superior.");
-            return;
-        }
-
-        int idAFN;
-        try {
-            idAFN = Integer.parseInt(JOptionPane.showInputDialog("Ingrese el ID del AFN:"));
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "El ID del AFN debe ser un número.");
-            return;
-        }
-
-        AFN nuevoAFN = new AFN().CrearAFNBasico(caracterInferior.charAt(0), caracterSuperior.charAt(0));
-        nuevoAFN.IdAFN = idAFN;
-        lastAFNId = idAFN;
-        afnList.add(nuevoAFN); // Agrega el AFN creado a la lista
-
-        JOptionPane.showMessageDialog(null, "AFN creado exitosamente.");
+    String caracterInferior = JOptionPane.showInputDialog("Ingrese el caracter inferior:");
+    if (caracterInferior == null || caracterInferior.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "Debe ingresar un caracter inferior.");
+        return;
     }
+
+    String caracterSuperior = JOptionPane.showInputDialog("Ingrese el caracter superior:");
+    if (caracterSuperior == null || caracterSuperior.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "Debe ingresar un caracter superior.");
+        return;
+    }
+
+    // Cargar y redimensionar la imagen
+    ImageIcon iconoOriginal = new ImageIcon(ClassLoader.getSystemResource("resources/basico.png"));
+    Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+    ImageIcon iconoRedimensionado = new ImageIcon(imagenEscalada);
+
+    // Crear panel personalizado con imagen y texto debajo
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+    JLabel labelImagen = new JLabel(iconoRedimensionado);
+    JLabel labelTexto = new JLabel("Básico:");
+    labelTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
+    labelImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Agregar componentes al panel en orden vertical
+    panel.add(labelImagen);
+    panel.add(labelTexto);
+
+    // Mostrar el diálogo personalizado
+    JOptionPane.showMessageDialog(null, panel, "Imagen", JOptionPane.PLAIN_MESSAGE);
+
+    int idAFN;
+    try {
+        idAFN = Integer.parseInt(JOptionPane.showInputDialog("Ingrese el ID del AFN:"));
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "El ID del AFN debe ser un número.");
+        return;
+    }
+
+    AFN nuevoAFN = new AFN().CrearAFNBasico(caracterInferior.charAt(0), caracterSuperior.charAt(0));
+    nuevoAFN.IdAFN = idAFN;
+    lastAFNId = idAFN;
+    afnList.add(nuevoAFN); // Agrega el AFN creado a la lista
+
+    JOptionPane.showMessageDialog(null, "AFN creado exitosamente.");
+}
 
     public static void realizarAccionUnir() {
         if (afnList.size() < 2) {
@@ -256,6 +277,26 @@ public class Main {
 
         JOptionPane.showMessageDialog(null, comboBox, "Seleccionar segundo AFN", JOptionPane.PLAIN_MESSAGE);
         int afnIndex2 = comboBox.getSelectedIndex();
+        
+        ImageIcon iconoOriginal = new ImageIcon(ClassLoader.getSystemResource("resources/unir.png"));
+    Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+    ImageIcon iconoRedimensionado = new ImageIcon(imagenEscalada);
+
+    // Crear panel personalizado con imagen y texto debajo
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+    JLabel labelImagen = new JLabel(iconoRedimensionado);
+    JLabel labelTexto = new JLabel("Unir:");
+    labelTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
+    labelImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Agregar componentes al panel en orden vertical
+    panel.add(labelImagen);
+    panel.add(labelTexto);
+
+    // Mostrar el diálogo personalizado
+    JOptionPane.showMessageDialog(null, panel, "Imagen", JOptionPane.PLAIN_MESSAGE);
 
         if (afnIndex1 == afnIndex2) {
             JOptionPane.showMessageDialog(null, "Debe seleccionar dos AFN diferentes.");
@@ -274,7 +315,8 @@ public class Main {
 
     public static void realizarAccionConcatenar() {
         if (afnList.size() < 2) {
-            JOptionPane.showMessageDialog(null, "Deben existir al menos dos AFN para realizar la operación de concatenación.");
+            JOptionPane.showMessageDialog(null,
+                    "Deben existir al menos dos AFN para realizar la operación de concatenación.");
             return;
         }
 
@@ -289,6 +331,26 @@ public class Main {
 
         JOptionPane.showMessageDialog(null, comboBox, "Seleccionar segundo AFN", JOptionPane.PLAIN_MESSAGE);
         int afnIndex2 = comboBox.getSelectedIndex();
+        
+        ImageIcon iconoOriginal = new ImageIcon(ClassLoader.getSystemResource("resources/concatenar.png"));
+    Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+    ImageIcon iconoRedimensionado = new ImageIcon(imagenEscalada);
+
+    // Crear panel personalizado con imagen y texto debajo
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+    JLabel labelImagen = new JLabel(iconoRedimensionado);
+    JLabel labelTexto = new JLabel("Concatenar:");
+    labelTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
+    labelImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Agregar componentes al panel en orden vertical
+    panel.add(labelImagen);
+    panel.add(labelTexto);
+
+    // Mostrar el diálogo personalizado
+    JOptionPane.showMessageDialog(null, panel, "Imagen", JOptionPane.PLAIN_MESSAGE);
 
         if (afnIndex1 == afnIndex2) {
             JOptionPane.showMessageDialog(null, "Debe seleccionar dos AFN diferentes.");
@@ -324,6 +386,26 @@ public class Main {
         }
 
         int afnIndex = comboBox.getSelectedIndex();
+        
+        ImageIcon iconoOriginal = new ImageIcon(ClassLoader.getSystemResource("resources/cerraduramas.png"));
+    Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+    ImageIcon iconoRedimensionado = new ImageIcon(imagenEscalada);
+
+    // Crear panel personalizado con imagen y texto debajo
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+    JLabel labelImagen = new JLabel(iconoRedimensionado);
+    JLabel labelTexto = new JLabel("Cerradura Positiva:");
+    labelTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
+    labelImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Agregar componentes al panel en orden vertical
+    panel.add(labelImagen);
+    panel.add(labelTexto);
+
+    // Mostrar el diálogo personalizado
+    JOptionPane.showMessageDialog(null, panel, "Imagen", JOptionPane.PLAIN_MESSAGE);
 
         if (afnIndex == -1) {
             JOptionPane.showMessageDialog(null, "No se ha seleccionado ningún AFN.");
@@ -355,6 +437,26 @@ public class Main {
         }
 
         int afnIndex = comboBox.getSelectedIndex();
+        
+        ImageIcon iconoOriginal = new ImageIcon(ClassLoader.getSystemResource("resources/cerraduraKl.png"));
+    Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+    ImageIcon iconoRedimensionado = new ImageIcon(imagenEscalada);
+
+    // Crear panel personalizado con imagen y texto debajo
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+    JLabel labelImagen = new JLabel(iconoRedimensionado);
+    JLabel labelTexto = new JLabel("Cerradura Kleene:");
+    labelTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
+    labelImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Agregar componentes al panel en orden vertical
+    panel.add(labelImagen);
+    panel.add(labelTexto);
+
+    // Mostrar el diálogo personalizado
+    JOptionPane.showMessageDialog(null, panel, "Imagen", JOptionPane.PLAIN_MESSAGE);
 
         if (afnIndex == -1) {
             JOptionPane.showMessageDialog(null, "No se ha seleccionado ningún AFN.");
@@ -386,6 +488,26 @@ public class Main {
         }
 
         int afnIndex = comboBox.getSelectedIndex();
+        
+        ImageIcon iconoOriginal = new ImageIcon(ClassLoader.getSystemResource("resources/opcional.png"));
+    Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+    ImageIcon iconoRedimensionado = new ImageIcon(imagenEscalada);
+
+    // Crear panel personalizado con imagen y texto debajo
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+    JLabel labelImagen = new JLabel(iconoRedimensionado);
+    JLabel labelTexto = new JLabel("Opcional:");
+    labelTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
+    labelImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Agregar componentes al panel en orden vertical
+    panel.add(labelImagen);
+    panel.add(labelTexto);
+
+    // Mostrar el diálogo personalizado
+    JOptionPane.showMessageDialog(null, panel, "Imagen", JOptionPane.PLAIN_MESSAGE);
 
         if (afnIndex == -1) {
             JOptionPane.showMessageDialog(null, "No se ha seleccionado ningún AFN.");
@@ -419,7 +541,7 @@ public class Main {
         tableModel.addColumn("Token");
 
         for (AFN afn : afnList) {
-            tableModel.addRow(new Object[]{afn.IdAFN, false, ""});
+            tableModel.addRow(new Object[] { afn.IdAFN, false, "" });
         }
 
         JTable table = new JTable(tableModel);
@@ -443,7 +565,8 @@ public class Main {
                             tokens.add(token);
                         } catch (NumberFormatException ex) {
                             validInput = false;
-                            JOptionPane.showMessageDialog(frame, "Token inválido en la fila " + (i + 1) + ". Intente de nuevo.");
+                            JOptionPane.showMessageDialog(frame,
+                                    "Token inválido en la fila " + (i + 1) + ". Intente de nuevo.");
                             break;
                         }
                     }
@@ -543,7 +666,8 @@ public class Main {
             alfabeto.deleteCharAt(alfabeto.length() - 1);
             alfabeto.deleteCharAt(alfabeto.length() - 1);
 
-            tableModel.addRow(new Object[]{afn.IdAFN, afn.EdoIni.getIdEstado(), estados.toString(), estadosAceptacion.toString(), alfabeto.toString()});
+            tableModel.addRow(new Object[] { afn.IdAFN, afn.EdoIni.getIdEstado(), estados.toString(),
+                    estadosAceptacion.toString(), alfabeto.toString() });
         }
 
         JTable table = new JTable(tableModel);
@@ -569,7 +693,8 @@ public class Main {
         }
 
         JComboBox<String> comboBox = new JComboBox<>(afnOptions);
-        int result = JOptionPane.showConfirmDialog(null, comboBox, "Seleccionar AFN para convertir", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(null, comboBox, "Seleccionar AFN para convertir",
+                JOptionPane.OK_CANCEL_OPTION);
         if (result != JOptionPane.OK_OPTION) {
             return; // El usuario canceló la selección
         }
@@ -601,7 +726,8 @@ public class Main {
 
         afdList.add(afd); // Agregar el AFD resultante a la lista de AFDs
 
-        JOptionPane.showMessageDialog(null, "Conversión de AFN a AFD realizada con éxito.\nID del AFD: " + afd.idAFD + "\nArchivo guardado como: " + nombreArchivo + ".txt");
+        JOptionPane.showMessageDialog(null, "Conversión de AFN a AFD realizada con éxito.\nID del AFD: " + afd.idAFD
+                + "\nArchivo guardado como: " + nombreArchivo + ".txt");
     }
 
     public static void RealizarAccionProbarAnalizadorLexico() {
@@ -646,7 +772,8 @@ public class Main {
                         afdOptions[i] = "ID: " + afdList.get(i).idAFD;
                     }
                     JComboBox<String> comboBox = new JComboBox<>(afdOptions);
-                    int result = JOptionPane.showConfirmDialog(null, comboBox, "Seleccionar AFD", JOptionPane.OK_CANCEL_OPTION);
+                    int result = JOptionPane.showConfirmDialog(null, comboBox, "Seleccionar AFD",
+                            JOptionPane.OK_CANCEL_OPTION);
                     if (result == JOptionPane.OK_OPTION) {
                         int afdIndex = comboBox.getSelectedIndex();
                         afd = afdList.get(afdIndex);
@@ -684,7 +811,7 @@ public class Main {
 
                 int token;
                 while ((token = analisadorLexico.yylex()) != SimbolosEspeciales.FIN) {
-                    tableModel.addRow(new Object[]{analisadorLexico.yyText, token});
+                    tableModel.addRow(new Object[] { analisadorLexico.yyText, token });
                 }
 
                 JTable table = new JTable(tableModel);
@@ -761,7 +888,8 @@ public class Main {
                         afdOptions[i] = "ID: " + afdList.get(i).idAFD;
                     }
                     JComboBox<String> comboBox = new JComboBox<>(afdOptions);
-                    int result = JOptionPane.showConfirmDialog(null, comboBox, "Seleccionar AFD", JOptionPane.OK_CANCEL_OPTION);
+                    int result = JOptionPane.showConfirmDialog(null, comboBox, "Seleccionar AFD",
+                            JOptionPane.OK_CANCEL_OPTION);
                     if (result == JOptionPane.OK_OPTION) {
                         int afdIndex = comboBox.getSelectedIndex();
                         afd = afdList.get(afdIndex);
@@ -770,7 +898,8 @@ public class Main {
                     }
                 } else if (rbArchivo.isSelected()) {
                     JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos de texto (*.txt)", "txt"));
+                    fileChooser.setFileFilter(
+                            new javax.swing.filechooser.FileNameExtensionFilter("Archivos de texto (*.txt)", "txt"));
                     fileChooser.setDialogTitle("Seleccionar el archivo de texto del AFD");
 
                     int returnValue = fileChooser.showOpenDialog(null);
@@ -798,11 +927,13 @@ public class Main {
                 try {
                     EvaluadorExpr evaluador = new EvaluadorExpr(expresion, afd);
                     if (evaluador.IniVal()) {
-                        JOptionPane.showMessageDialog(null, "Expresión sintácticamente correcta.", "AVISO", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Expresión sintácticamente correcta.", "AVISO",
+                                JOptionPane.INFORMATION_MESSAGE);
                         txtResult.setText(String.valueOf(evaluador.result));
                         txtPostfijo.setText(evaluador.ExprPost);
                     } else {
-                        JOptionPane.showMessageDialog(null, "Expresión sintácticamente incorrecta.", "AVISO", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Expresión sintácticamente incorrecta.", "AVISO",
+                                JOptionPane.INFORMATION_MESSAGE);
                         txtResult.setText("Error");
                         txtPostfijo.setText("");
                     }
@@ -863,7 +994,8 @@ public class Main {
         cargarArchivoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos de texto (*.txt)", "txt"));
+                fileChooser.setFileFilter(
+                        new javax.swing.filechooser.FileNameExtensionFilter("Archivos de texto (*.txt)", "txt"));
                 int returnValue = fileChooser.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     filePath[0] = fileChooser.getSelectedFile().getAbsolutePath();
@@ -901,7 +1033,8 @@ public class Main {
                         AFN afnResultado = erAFN.Result;
                         afnResultado.IdAFN = idAFN;
                         afnList.add(afnResultado);
-                        JOptionPane.showMessageDialog(frame, "Conversión de ER a AFN realizada con éxito. ID del AFN: " + idAFN);
+                        JOptionPane.showMessageDialog(frame,
+                                "Conversión de ER a AFN realizada con éxito. ID del AFN: " + idAFN);
                     } else {
                         JOptionPane.showMessageDialog(frame, "Error en la conversión de ER a AFN.");
                     }
