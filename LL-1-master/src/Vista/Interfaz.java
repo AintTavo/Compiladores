@@ -112,7 +112,6 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
-        Btn_Verificar.setBackground(new java.awt.Color(255, 255, 255));
         Btn_Verificar.setForeground(new java.awt.Color(60, 63, 65));
         Btn_Verificar.setText("Verificar");
         Btn_Verificar.setBorder(new javax.swing.border.MatteBorder(null));
@@ -122,7 +121,6 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
-        escogerGram.setBackground(new java.awt.Color(255, 255, 255));
         escogerGram.setForeground(new java.awt.Color(60, 63, 65));
         escogerGram.setText("Escoger gramatica");
         escogerGram.setBorder(new javax.swing.border.MatteBorder(null));
@@ -187,11 +185,9 @@ public class Interfaz extends javax.swing.JFrame {
 
         jLabel3.setBackground(new java.awt.Color(255, 255, 255));
         jLabel3.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 0, 0));
         jLabel3.setText("Gramatica sin vicios");
 
         jLabel4.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
         jLabel4.setText("Primeros y Siguientes");
 
         JScrollPanel.setBackground(new java.awt.Color(255, 255, 255));
