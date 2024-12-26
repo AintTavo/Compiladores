@@ -32,6 +32,12 @@ class Stack {
     clear() {
         this.items.length = 0;
     }
+
+    clone() {
+        const newStack = new Stack();
+        newStack.items = [...this.items];
+        return newStack;
+    }
 }
 
 
