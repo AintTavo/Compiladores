@@ -3,7 +3,7 @@ console.log(StartDescent(Lexer));
 
 let Lexer2 = new GramaticLexer(`
     <b> -> <a> | <c> ;
-    <d> -> <d>;
+    <d> -> <d><c>;
     `);
 
 console.log(Lexer2);
