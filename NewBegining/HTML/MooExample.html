@@ -28,13 +28,20 @@
     <header>
 
     </header>
-
+    <div class="container">
+        <h1>Analizador Gramatical</h1>
+        <label for="grammar-input">Introduce la gramática:</label>
+        <textarea id="grammar-input">&lt;b&gt; -&gt; &lt;a&gt; | &lt;c&gt;;</textarea>
+        <button onclick="runAnalysis()">Analizar</button>
+        <div id="result" style="display: none;"></div>
+      </div>
     <footer>
         <!--#######################Scripts Con DOM####################################-->
         
         <script src="../JS/Lexer.js" defer></script>
-        <script src="../JS/RecursiveDescent.js" defer></script>
+        <script src="../JS/Recursive.js" defer></script>
         <script src="../JS/MooExample.js" defer></script>
+        <script src="../JS/test.js" defer></script>
     </footer>
 </body>
 </html>
