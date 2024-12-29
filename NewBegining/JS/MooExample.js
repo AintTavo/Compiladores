@@ -1,20 +1,29 @@
-let Lexer = new GramaticLexer('<b> -> <a> | <c>;');
-console.log(StartDescent(Lexer));
+//let Lexer = new GramaticLexer('<b> -> <a> | <c>;');
+//console.log(StartDescent(Lexer));
 
 let Lexer2 = new GramaticLexer(`
-    <b> -> <a> | <c> ;
-    <d> -> <d><c>;
+    <d> -> <d><c>; 
     `);
 
 console.log(Lexer2);
 console.log(StartDescent(Lexer2));
 
 let Lexer3 = new GramaticLexer(`
-    <Hola> -> <Hola><c>;
+    <Hola> -> <Hola> | <c><d><c>;
+    <tmpLexer> -> <a><b><c><d><eeee> |<a>|    <c> |
+        <b>; 
     `);
+
+
 
 console.log(StartDescent(Lexer3));
 
+let Lexer4 = new GramaticLexer(`
+    <a> -> <a><a>;
+    <d> -
+    `);
+console.log(Lexer4);
+console.log(StartDescent(Lexer3));
 /*
 let tmpLexer;
 

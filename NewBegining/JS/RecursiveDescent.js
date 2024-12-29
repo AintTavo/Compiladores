@@ -1,4 +1,4 @@
-function StartDescent(inputText) {
+/* function StartDescent(inputText) {
     let lexer = new GramaticLexer(inputText);
     if (G(lexer)) {
         return true;
@@ -132,3 +132,4 @@ function Simbolos_P(inputLexer) {
     }
     return true;  // Termina si no hay más símbolos
 }
+ */

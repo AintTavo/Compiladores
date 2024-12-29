@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Tabla LL(1)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            text-align: center;
+            padding: 8px;
+        }
+        .output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Generador de Tabla LL(1)</h1>
+    <div class="container">
+        <label for="gramatica">Introduce las reglas de la gramática (una por línea, formato &lt;E&gt;-&gt;&lt;TB&gt;):</label>
+        <textarea id="gramatica" placeholder="<E>-><TB>\n<B>-><+TB>\n<B>-><&>"></textarea>
+        <button onclick="grammarChanged()">Generar Tabla LL(1)</button>
+        <div class="output">
+            <h3>Tabla LL(1):</h3>
+            <table border="1">
+                <thead>
+                    <tr id="llTableHead">
+                        <th>FIRST</th>
+                        <th>FOLLOW</th>
+                        <th>No terminal</th>
+                    </tr>
+                </thead>
+                <tbody id="llTableRows"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        var EPSILON = '&';
+        var alphabet = [];
+        var nonterminals = [];
+        var terminals = [];
+        var rules = [];
+        var firsts = {};
+        var follows = {};
+        var ruleTable = {};
+
+        function grammarChanged() {
+            document.getElementById('llTableRows').innerHTML = '';
+            rules = document.getElementById('gramatica').value.split('\n');
+            alphabet = [];
+            nonterminals = [];
+            terminals = [];
+            
+            collectAlphabetAndSymbols();
+            collectFirsts();
+            collectFollows();
+            makeRuleTable();
+            displayTable();
+        }
+
+        function collectAlphabetAndSymbols() {
+            rules.forEach(rule => {
+                const [izq, der] = rule.split('->');
+                if (izq && der) {
+                    const nt = izq.replace(/[<>]/g, '').trim();
+                    nonterminals.push(nt);
+                    alphabet.push(nt);
+                    
+                    der.split('|').forEach(option => {
+                        option.match(/<.*?>/g)?.forEach(symbol => {
+                            alphabet.push(symbol.replace(/[<>]/g, ''));
+                            if (!nonterminals.includes(symbol.replace(/[<>]/g, ''))){
+                                terminals.push(symbol.replace(/[<>]/g, ''));
+                            }
+                        });
+                        option.split('').forEach(char => {
+                            if (!/[<>|\s]/.test(char) && !nonterminals.includes(char)) {
+                                terminals.push(char);
+                            }
+                        });
+                    });
+                }
+            });
+            terminals.push('$');
+        }
+
+        function makeRuleTable() {
+            ruleTable = {};
+            rules.forEach(rule => {
+                const [izq, der] = rule.split('->');
+                if (!izq || !der) return;
+                const nt = izq.replace(/[<>]/g, '').trim();
+                const productions = der.split('|');
+                productions.forEach(prod => {
+                    const firstSymbol = prod.trim()[0];
+                    if (!ruleTable[nt]) ruleTable[nt] = {};
+                    if (terminals.includes(firstSymbol) || firstSymbol === EPSILON) {
+                        ruleTable[nt][firstSymbol] = `${nt}->${prod}`;
+                    }
+                });
+            });
+        }
+
+        function displayTable() {
+            const tbody = document.getElementById('llTableRows');
+            tbody.innerHTML = '';
+            nonterminals.forEach(nt => {
+                let row = `<tr><td>{${firsts[nt] || []}}</td><td>{${follows[nt] || []}}</td><td>${nt}</td>`;
+                terminals.forEach(t => {
+                    row += `<td>${ruleTable[nt]?.[t] || ''}</td>`;
+                });
+                row += `</tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function collectFirsts() {
+            firsts = {};
+            nonterminals.forEach(nt => firsts[nt] = []);
+            rules.forEach(rule => {
+                const [izq, der] = rule.split('->');
+                const nt = izq.replace(/[<>]/g, '').trim();
+                const firstChar = der.trim()[0];
+                if (terminals.includes(firstChar)) {
+                    if (!firsts[nt].includes(firstChar)) firsts[nt].push(firstChar);
+                }
+            });
+        }
+
+        function collectFollows() {
+            follows = {};
+            nonterminals.forEach(nt => follows[nt] = []);
+            follows[nonterminals[0]] = ['$'];
+        }
+    </script>
+</body>
+</html>
