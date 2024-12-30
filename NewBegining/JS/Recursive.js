@@ -107,7 +107,7 @@ function annotateTerminals (ast, terminalsSet) {
                 const sym = node.left;
                 const isTerm = terminalsSet.has(sym);
                 node.left = {
-                    name: sym,
+                    value: sym,
                     isTerminal: isTerm,
                 }
                 for (const rightNode of node.rights) {
@@ -120,7 +120,7 @@ function annotateTerminals (ast, terminalsSet) {
                     const isTerm = terminalsSet.has(sym);
 
                     node.symbols[i] = {
-                        name: sym,
+                        value: sym,
                         isTerminal: isTerm,
                     };
                 }

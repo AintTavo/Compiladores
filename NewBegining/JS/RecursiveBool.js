@@ -1,4 +1,4 @@
-/* let Lexer;
+let Lexer;
 
 function StartDescent(inputText) {
         // Creamos el lexer
@@ -125,4 +125,4 @@ function Simbolos_P() {
 
     Lexer.undoToken();
     return true;
-} */
+}
