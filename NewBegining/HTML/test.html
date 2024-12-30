@@ -40,119 +40,72 @@
     <div class="container">
         <label for="gramatica">Introduce las reglas de la gramática (una por línea, formato &lt;E&gt;-&gt;&lt;TB&gt;):</label>
         <textarea id="gramatica" placeholder="<E>-><TB>\n<B>-><+TB>\n<B>-><&>"></textarea>
-        <button onclick="grammarChanged()">Generar Tabla LL(1)</button>
+        <button onclick="generarTablaLL1()">Generar Tabla LL(1)</button>
         <div class="output">
             <h3>Tabla LL(1):</h3>
-            <table border="1">
+            <table id="tablaLL1">
                 <thead>
-                    <tr id="llTableHead">
-                        <th>FIRST</th>
-                        <th>FOLLOW</th>
-                        <th>No terminal</th>
+                    <tr>
+                        <th>No terminal|Terminal</th>
                     </tr>
                 </thead>
-                <tbody id="llTableRows"></tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        var EPSILON = '&';
-        var alphabet = [];
-        var nonterminals = [];
-        var terminals = [];
-        var rules = [];
-        var firsts = {};
-        var follows = {};
-        var ruleTable = {};
-
-        function grammarChanged() {
-            document.getElementById('llTableRows').innerHTML = '';
-            rules = document.getElementById('gramatica').value.split('\n');
-            alphabet = [];
-            nonterminals = [];
-            terminals = [];
+        function generarTablaLL1() {
+            const gramatica = document.getElementById('gramatica').value.split('\n');
+            const terminales = new Set();
+            const noTerminales = new Set();
+            const producciones = {};
             
-            collectAlphabetAndSymbols();
-            collectFirsts();
-            collectFollows();
-            makeRuleTable();
-            displayTable();
-        }
-
-        function collectAlphabetAndSymbols() {
-            rules.forEach(rule => {
-                const [izq, der] = rule.split('->');
-                if (izq && der) {
-                    const nt = izq.replace(/[<>]/g, '').trim();
-                    nonterminals.push(nt);
-                    alphabet.push(nt);
+            // Extraer no terminales y terminales
+            gramatica.forEach(regla => {
+                const match = regla.match(/^<([A-Z])>-><([A-Za-z0-9+*()&]+)>$/);
+                if (match) {
+                    const nt = match[1].trim();
+                    const der = match[2].trim();
+                    noTerminales.add(nt);
+                    producciones[nt] = producciones[nt] || [];
+                    producciones[nt].push(der);
                     
-                    der.split('|').forEach(option => {
-                        option.match(/<.*?>/g)?.forEach(symbol => {
-                            alphabet.push(symbol.replace(/[<>]/g, ''));
-                            if (!nonterminals.includes(symbol.replace(/[<>]/g, ''))){
-                                terminals.push(symbol.replace(/[<>]/g, ''));
-                            }
-                        });
-                        option.split('').forEach(char => {
-                            if (!/[<>|\s]/.test(char) && !nonterminals.includes(char)) {
-                                terminals.push(char);
-                            }
-                        });
+                    der.split('').forEach(simbolo => {
+                        if (!/[A-Z<>\s]/.test(simbolo) && simbolo !== '-') {
+                            terminales.add(simbolo);
+                        }
                     });
                 }
             });
-            terminals.push('$');
-        }
-
-        function makeRuleTable() {
-            ruleTable = {};
-            rules.forEach(rule => {
-                const [izq, der] = rule.split('->');
-                if (!izq || !der) return;
-                const nt = izq.replace(/[<>]/g, '').trim();
-                const productions = der.split('|');
-                productions.forEach(prod => {
-                    const firstSymbol = prod.trim()[0];
-                    if (!ruleTable[nt]) ruleTable[nt] = {};
-                    if (terminals.includes(firstSymbol) || firstSymbol === EPSILON) {
-                        ruleTable[nt][firstSymbol] = `${nt}->${prod}`;
-                    }
-                });
-            });
-        }
-
-        function displayTable() {
-            const tbody = document.getElementById('llTableRows');
+            terminales.add('$');
+            
+            // Crear encabezados de la tabla
+            const tabla = document.getElementById('tablaLL1');
+            const thead = tabla.querySelector('thead tr');
+            const tbody = tabla.querySelector('tbody');
+            thead.innerHTML = '<th>No terminal|Terminal</th>';
+            terminales.forEach(t => thead.innerHTML += `<th>${t}</th>`);
             tbody.innerHTML = '';
-            nonterminals.forEach(nt => {
-                let row = `<tr><td>{${firsts[nt] || []}}</td><td>{${follows[nt] || []}}</td><td>${nt}</td>`;
-                terminals.forEach(t => {
-                    row += `<td>${ruleTable[nt]?.[t] || ''}</td>`;
+            
+            // Llenar la tabla LL(1)
+            noTerminales.forEach(nt => {
+                let fila = `<tr><td>${nt}</td>`;
+                terminales.forEach(t => {
+                    let produccion = '';
+                    if (producciones[nt]) {
+                        producciones[nt].forEach(p => {
+                            const primerSimbolo = p.trim()[0];
+                            if (primerSimbolo === t || (p === '&' && t === '$')) {
+                                produccion = `${nt}->${p}`;
+                            }
+                        });
+                    }
+                    fila += `<td>${produccion}</td>`;
                 });
-                row += `</tr>`;
-                tbody.innerHTML += row;
+                fila += '</tr>';
+                tbody.innerHTML += fila;
             });
-        }
-
-        function collectFirsts() {
-            firsts = {};
-            nonterminals.forEach(nt => firsts[nt] = []);
-            rules.forEach(rule => {
-                const [izq, der] = rule.split('->');
-                const nt = izq.replace(/[<>]/g, '').trim();
-                const firstChar = der.trim()[0];
-                if (terminals.includes(firstChar)) {
-                    if (!firsts[nt].includes(firstChar)) firsts[nt].push(firstChar);
-                }
-            });
-        }
-
-        function collectFollows() {
-            follows = {};
-            nonterminals.forEach(nt => follows[nt] = []);
-            follows[nonterminals[0]] = ['$'];
         }
     </script>
 </body>

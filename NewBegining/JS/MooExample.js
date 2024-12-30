@@ -2,28 +2,16 @@
 //console.log(StartDescent(Lexer));
 
 let Lexer2 = new GramaticLexer(`
-    <d> -> <d><c>; 
+    <Holaxd> -> <d><c>; 
     `);
 
 console.log(Lexer2);
-console.log(StartDescent(Lexer2));
-
-let Lexer3 = new GramaticLexer(`
-    <Hola> -> <Hola> | <c><d><c>;
-    <tmpLexer> -> <a><b><c><d><eeee> |<a>|    <c> |
-        <b>; 
-    `);
+let Exampletoken = Lexer2.yylex();
+console.log(Exampletoken.value);
 
 
 
-console.log(StartDescent(Lexer3));
 
-let Lexer4 = new GramaticLexer(`
-    <a> -> <a><a>;
-    <d> -
-    `);
-console.log(Lexer4);
-console.log(StartDescent(Lexer3));
 /*
 let tmpLexer;
 

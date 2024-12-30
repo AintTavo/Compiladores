@@ -5,6 +5,7 @@ function runAnalysis() {
   try {
     const lexer = new GramaticLexer(inputText);
     const isValid = StartDescent(lexer);
+    console.log(isValid);
     resultDiv.textContent = isValid
       ? "✅ ¡La gramática es válida!"
       : "❌ La gramática es inválida.";

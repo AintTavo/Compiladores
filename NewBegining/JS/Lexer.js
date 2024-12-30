@@ -8,10 +8,18 @@ class GramaticLexer {
 
         this.lexer = moo.compile({
             arrow: /->/,                  // Flechas
-            gStatement: /<[a-zA-Z]+>/,    // Reglas de la gramática
+            gStatement: {                 // Reglas de la gramática
+                match: /<[a-zA-Z][a-zA-Z0-9_]*>/,
+                value: (text) => {
+                    return text.slice(1,-1);
+                },
+            },     
             or: /\|/,                     // Operador OR
             endLn: /\;/,                  // Final de línea
-            WS: { match: /[ \t\n\r]+/, lineBreaks: true }, // Espacios y saltos de línea
+            WS: { 
+                match: /[ \t\n\r]+/, 
+                lineBreaks: true, 
+            }, // Espacios y saltos de línea
             error: { match: /./ },
         });
 
@@ -39,7 +47,7 @@ class GramaticLexer {
 
         // Filtrar y agregar solo los tokens que no sean de tipo WS
         for (const token of tmpLexerTokens) {
-            if (token.type !== 'WS') { // Solo agregar si el tipo no es WS
+            if (token.type !== 'WS') {
                 this.tokenStack.push(token);
             }
         }
@@ -53,12 +61,10 @@ class GramaticLexer {
     }
 
     reset(inputText) {
-        // Validar el nuevo texto de entrada
         if (typeof inputText !== 'string' || inputText.trim() === '') {
             throw new Error('Reset requires a non-empty string input.');
         }
 
-        // Reiniciar el lexer y procesar los tokens
         this.tokenStack = new Stack();
         this.undoStack = new Stack();
         this._initializeFromText(inputText);
@@ -66,20 +72,18 @@ class GramaticLexer {
 
     yylex() {
         if (this.tokenStack.isEmpty()) {
-            return null; // Manejo de caso: no hay más tokens
+            return null;
         }
-        const tmpLastToken = this.tokenStack.pop(); // Sacar el último token
-        this.undoStack.push(tmpLastToken);         // Guardar en undoStack
-        return tmpLastToken;                       // Devolver el token
+        const tmpLastToken = this.tokenStack.pop();
+        this.undoStack.push(tmpLastToken);
+        return tmpLastToken;
     }
 
     yytry() {
-        // Es el peek de la parte de lo último que hay en la cola
         if (this.tokenStack.isEmpty()) {
             return null;
         }
-        const tmpNextToken = this.tokenStack.peek();
-        return tmpNextToken;
+        return this.tokenStack.peek();
     }
 
     undoToken() {
@@ -88,16 +92,40 @@ class GramaticLexer {
         }
     }
 
+    // ----------------------------------------------------------------------
+    // Métodos para “snapshot” (guardar / restaurar) usando stacks temporales
+    // ----------------------------------------------------------------------
     saveState() {
-        this.tmpTokenStack = this.tokenStack.clone(); // Clonar tokenStack
-        this.tmpUndoStack = this.undoStack.clone();   // Clonar undoStack
+        this.tmpTokenStack = this.tokenStack.clone();
+        this.tmpUndoStack = this.undoStack.clone();
     }
 
     loadState() {
         if (!this.tmpTokenStack || !this.tmpUndoStack) {
             throw new Error('No saved state to load. Call saveState() first.');
         }
-        this.tokenStack = this.tmpTokenStack.clone(); // Restaurar tokenStack
-        this.undoStack = this.tmpUndoStack.clone();   // Restaurar undoStack
+        this.tokenStack = this.tmpTokenStack.clone();
+        this.undoStack = this.tmpUndoStack.clone();
+    }
+
+    // ----------------------------------------------------------------------
+    // Métodos clone() y restore() 
+    // ----------------------------------------------------------------------
+
+    /**
+     * Crea y devuelve una nueva instancia de GramaticLexer
+     * copiando el estado actual (tokenStack, undoStack, etc.).
+     */
+    clone() {
+        return new GramaticLexer(this);
+    }
+
+    /**
+     * Restaura (sobrescribe) el estado actual con el de otro lexer.
+     * @param {GramaticLexer} lexerState - Instancia de GramaticLexer
+     *                                     de la que se copiará el estado.
+     */
+    restore(lexerState) {
+        this._cloneFromLexer(lexerState);
     }
 }
