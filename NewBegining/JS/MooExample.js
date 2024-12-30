@@ -5,9 +5,9 @@ let Lexer2 = new GramaticLexer(`
     <Holaxd> -> <d><c>; 
     `);
 
-console.log(Lexer2);
-let Exampletoken = Lexer2.yylex();
-console.log(Exampletoken.value);
+let a = parseAndMarkTerminals(Lexer2);
+console.log(a);
+
 
 
 

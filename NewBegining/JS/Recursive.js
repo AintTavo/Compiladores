@@ -1,5 +1,7 @@
 let Lexer;
 
+// ############################################################Funciones principales de Recursive.js#############################################################
+// Funcion que regresa gramatica sin no terminales y terminales
 function StartDescent(inputText) {
     Lexer = new GramaticLexer(inputText);
     const ast = G();
@@ -9,6 +11,129 @@ function StartDescent(inputText) {
     return null;
 }
 
+// Esta funcion hace lo mismo que StartDescent y regresa un JSON con la lista de terminales, la lista de no terminales y la gramatica en lista con
+// esta con no terminales y terminales
+function parseAndMarkTerminals(inputText){
+    // 1. Parseamos y obtenemos el AST
+    const ast = StartDescent(inputText);
+    if (!ast) {
+        console.error("Error: no se pudo parsear la entrada");
+        return null;
+    }
+
+    // 2. Obtenemos los set (o arrays) de terminales y no terminales
+    const { terminals, nonTerminals } = postProcessAST(ast);
+    console.log("Terminales:", terminals);
+    console.log("No terminales:", nonTerminals);
+
+    // 3. (Opcional) Anotamos el AST con isTerminal = true/false
+    annotateTerminals(ast, new Set(terminals), new Set(nonTerminals));
+
+    return {
+        ast: ast,
+        terminals: terminals,
+        nonTerminals: nonTerminals,
+    };
+}
+
+
+// Obtiene la lista de terminales y no terminales
+function postProcessAST(ast) {
+
+    // ###################################Codigo#############################
+    // 1. Recolectar simbolos
+    let nonTerminals = new Set();
+    let allSymbols = new Set();
+
+
+    // 2. Recorrer el AST
+    // ############################Funciones anidadas########################
+    function visit(node) {
+        if (!node) {
+            return;
+        }
+        switch (node.type) {
+            case 'Rules':
+                for (const rule of node.rules) {
+                    visit(rule);
+                }
+                break;
+            case 'Rule':
+                nonTerminals.add(node.left);
+                for (const rightNode of node.rights) {
+                    visit(rightNode);
+                }
+                break;
+            case 'RightSide':
+                for (const symbol of node.symbols) {
+                    allSymbols.add(symbol);
+                }
+                break;
+            default:
+                break;
+        }
+
+    }
+    visit(ast);
+
+    // 3. Determinar terminales
+    const terminals = new Set(
+        [...allSymbols].filter(sym => !nonTerminals.has(sym))
+    );
+
+    // 4. (Opcional) Generar arrays
+    const terminalsArray = Array.from(terminals);
+    const nonTerminalsArray = Array.from(nonTerminals);
+
+    return {
+        terminals: terminalsArray,
+        nonTerminals: nonTerminalsArray,
+    };
+}
+
+// Con una lista de terminales al arbol obtenido de StartDescent cambia los simbolos para tener en las hojas si es terminal o no terminal
+function annotateTerminals (ast, terminalsSet) {
+    function visit(node) {
+        if (!node) {
+            return;
+        }
+        switch (node.type) {
+            case 'Rules':
+                for (const rule of node.rules) {
+                    visit(rule);
+                }
+                break;
+            case 'Rule':
+                const sym = node.left;
+                const isTerm = terminalsSet.has(sym);
+                node.left = {
+                    name: sym,
+                    isTerminal: isTerm,
+                }
+                for (const rightNode of node.rights) {
+                    visit(rightNode);
+                }
+                break;
+            case 'RightSide':
+                for(let i = 0 ; i < node.symbols.length ; i++) {
+                    const sym = node.symbols[i];
+                    const isTerm = terminalsSet.has(sym);
+
+                    node.symbols[i] = {
+                        name: sym,
+                        isTerminal: isTerm,
+                    };
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    visit(ast);
+}
+
+// ############################################################Funciones del desenso recursivo######################################################################
 // G -> Reglas
 function G() {
     return Reglas();
@@ -29,6 +154,7 @@ function Reglas() {
     return null;
 }
 
+// Reglas_P -> Regla endLn Reglas_P | ε
 function Reglas_P() {
     let tmpLexer = Lexer.clone();
     let rule = Regla();
@@ -47,6 +173,7 @@ function Reglas_P() {
     return [];
 }
 
+// Regla -> LadoIzquierdo or Lados_Derechos
 function Regla() {
     let left = Lado_Izquierdo();
     if (left !== null) {
@@ -61,6 +188,7 @@ function Regla() {
     return null;
 }
 
+// Lado_Izquierdo -> gStatement
 function Lado_Izquierdo() {
     let token = Lexer.yylex();
     if (token && token.type === 'gStatement') {
@@ -69,6 +197,7 @@ function Lado_Izquierdo() {
     return null;
 }
 
+// Lados_Derechos -> Lado_Derecho Lados_Derechos_P
 function Lados_Derechos() {
     let right = Lado_Derecho();
     if (right !== null) {
@@ -80,6 +209,7 @@ function Lados_Derechos() {
     return null;
 }
 
+// Lados_Derechos_P -> or Lado_Derecho Lados_Derechos_P | ε
 function Lados_Derechos_P() {
     let token = Lexer.yylex();
     if (token && token.type === 'or') {
@@ -96,10 +226,12 @@ function Lados_Derechos_P() {
     return [];
 }
 
+// Lado_Derecho -> Simbolos
 function Lado_Derecho() {
     return Simbolos();
 }
 
+// Simbolos -> gStatement Simbolos_P
 function Simbolos() {
     let token = Lexer.yylex();
     if (token && token.type === 'gStatement') {
@@ -112,6 +244,7 @@ function Simbolos() {
     return null;
 }
 
+// Simbolos_P -> gStatement Simbolos_P | ε
 function Simbolos_P() {
     let token = Lexer.yylex();
     if (token && token.type === 'gStatement') {
@@ -125,132 +258,3 @@ function Simbolos_P() {
     Lexer.undoToken();
     return [];
 }
-
-/*
-function StartDescent(inputText) {
-    // Creamos el lexer
-    Lexer = new GramaticLexer(inputText);
-
-    // Iniciamos con la regla inicial: G
-    if (G()) {
-        if (Lexer.tokenStack.isEmpty()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// G → Reglas
-function G() {
-    return Reglas();
-}
-
-// Reglas → Regla endLn Reglas_P
-function Reglas() {
-    if (Regla()) {
-        let token = Lexer.yylex();
-        if (token && token.type === 'endLn') {
-            if (Reglas_P()) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-// Reglas_P → Regla endLn Reglas_P | ε
-function Reglas_P() {
-    let tmpLexer = Lexer.clone();
-    if (Regla()) {
-        let token = Lexer.yylex();
-        if (token && token.type === 'endLn') {
-            if (Reglas_P()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    Lexer.restore(tmpLexer);
-    return true;
-}
-
-// Regla → Lado_Izquierdo arrow Lados_Derechos
-function Regla() {
-    if (Lado_Izquierdo()) {
-        let token = Lexer.yylex();
-        if (token && token.type === 'arrow') {
-            if (Lados_Derechos()) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-// Lado_Izquierdo → gStatement
-function Lado_Izquierdo() {
-    let token = Lexer.yylex();
-    if (token && token.type === 'gStatement') {
-        return true;
-    }
-    return false;
-}
-
-// Lados_Derechos → Lado_Derecho Lados_Derechos_P
-function Lados_Derechos() {
-    if (Lado_Derecho()) {
-        if (Lados_Derechos_P()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Lados_Derechos_P → or Lado_Derecho Lados_Derechos_P | ε
-function Lados_Derechos_P() {
-    let token = Lexer.yylex();
-    if (token && token.type === 'or') {
-        if (Lado_Derecho()) {
-            if (Lados_Derechos_P()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    Lexer.undoToken();
-    return true;
-}
-
-// Lado_Derecho → Simbolos
-function Lado_Derecho() {
-    if(Simbolos()){
-        return true;
-    }
-    return false;
-}
-
-// Simbolos → gStatement Simbolos_P
-function Simbolos() {
-    let token = Lexer.yylex();
-    if (token && token.type === 'gStatement') {
-        if (Simbolos_P()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Simbolos_P → gStatement Simbolos_P | ε
-function Simbolos_P() {
-    let token = Lexer.yylex();
-    if (token && token.type === 'gStatement') {
-        if (Simbolos_P()) {
-            return true;
-        }
-        return false;
-    }
-
-    Lexer.undoToken();
-    return true;
-}
-*/

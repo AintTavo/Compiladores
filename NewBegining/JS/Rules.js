@@ -1,7 +1,7 @@
 // Arreglo general de todas las reglas de produccion de la gramatica propuesta
 class RulesNode {
     constructor(rules){
-        this.type = 'GramaticRules';
+        this.type = 'Rules';
         this.rules = rules; 
     }
 }
