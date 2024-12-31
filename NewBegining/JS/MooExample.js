@@ -6,7 +6,6 @@ let Lexer2 = new GramaticLexer(`
     `);
 
 let a = parseAndMarkTerminals(Lexer2);
-console.log(a);
 
 ll1 = new LL1(`
     <E> -> <T><Ep>;

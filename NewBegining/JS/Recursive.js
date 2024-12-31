@@ -23,8 +23,6 @@ function parseAndMarkTerminals(inputText){
 
     // 2. Obtenemos los set (o arrays) de terminales y no terminales
     const { terminals, nonTerminals } = postProcessAST(ast);
-    console.log("Terminales:", terminals);
-    console.log("No terminales:", nonTerminals);
 
     // 3. (Opcional) Anotamos el AST con isTerminal = true/false
     annotateTerminals(ast, new Set(terminals), new Set(nonTerminals));
