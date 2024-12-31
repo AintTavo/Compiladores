@@ -29,11 +29,7 @@ class LL1{
             }
 
             // Crea la tabla de la gramatica LL1 en base a los first y follow que haya encontrado
-            this.ll1Table = this.#createLL1Table(
-                this.firstList, 
-                this.followList, 
-                this.parserOutput
-            );
+            this.ll1Table = this.#createLL1Table(this.parserOutput);
 
         }
         catch (error) {
@@ -252,72 +248,99 @@ class LL1{
         return;
     }
 
-    #searchProduction(inputTerminal, Rules){
-        let Result = new Set();
-        let foundRule;
-        if(Rules.length === 1){
+    /**
+ * La función #searchProduction busca la producción adecuada dentro de un conjunto de reglas (Rules)
+ * en base a un terminal de entrada (inputTerminal). Devuelve un Set con los símbolos de la producción
+ * encontrada o null si no la encuentra.
+ */
+    #searchProduction(inputTerminal, Rules) {
+        let Result = new Set();   // Para almacenar la producción resultante
+        let foundRule;           // Se usará para guardar la regla (o 'Right') que coincida
+
+        // Si solo hay una regla en 'Rules', se asume esa por defecto
+        if (Rules.length === 1) {
             foundRule = Rules[0].symbols;
         }
-        else{
+        else {
+            // Si hay varias reglas, se recorre cada 'Right' en busca de la que coincida
+            // con el primer símbolo igual a 'inputTerminal'
             for (const Right of Rules) {
                 if (Right.symbols[0].value === inputTerminal)
                     foundRule = Right.symbols;
             }
         }
 
-
-        for(const Symbol of foundRule){
+        // Se convierte la regla encontrada en un conjunto de valores de los símbolos
+        for (const Symbol of foundRule) {
             Result = [...Result, Symbol.value];
         }
-        if(Result.length > 0)
+
+        // Si se encontraron símbolos, se retornan. De lo contrario, se devuelve null.
+        if (Result.length > 0)
             return Result;
         return null;
     }
 
-    #createLL1Table(inputFirstList, inputFollowList, inputAST){
-        
+    #createLL1Table(inputAST) {
+
+        // Se obtienen la cantidad de no terminales y se preparan los terminales
         let lengthNonTerminals = inputAST.nonTerminals.length;
         let tmpTerminals = new Set();
 
+        // Copiamos los terminales del AST, filtramos 'Epsilon' y agregamos '$'
         tmpTerminals = inputAST.terminals;
-        tmpTerminals = tmpTerminals.filter( (element) => { return element !== 'Epsilon'});
+        tmpTerminals = tmpTerminals.filter((element) => { return element !== 'Epsilon'; });
         tmpTerminals = [...tmpTerminals, '$'];
+
         let lengthTerminals = tmpTerminals.length;
 
-        // Declaracion de una matriz en JS, al parecer no hay matrices ya directamente declaradas
+        // Se declara la matriz LL1table con tantas filas como no terminales
         let LL1table = new Array(lengthNonTerminals);
 
-        for(let i = 0 ; i < lengthNonTerminals ; i++){
-            // Generacion de todo loq ue se va a ocupar en el 
+        // Se recorre cada no terminal para construir las filas
+        for (let i = 0; i < lengthNonTerminals; i++) {
             let actualRow = inputAST.nonTerminals[i];
+            // Se obtienen las reglas, sus FIRST y FOLLOW
             let rowRules = this.#searchInLeft(actualRow);
             let rowSymbols = this.#searchInFirst(actualRow);
             let rowFollows = this.#searhInFollow(actualRow);
+
+            // Cada fila de la tabla tendrá tantas columnas como terminales
             LL1table[i] = new Array(lengthTerminals);
 
-            for(let j = 0 ; j < lengthTerminals ; j++){
+            // Se recorre cada terminal para llenar la columna correspondiente
+            for (let j = 0; j < lengthTerminals; j++) {
                 let tmpTerminal = tmpTerminals[j];
-                // Encabezado principal de cada celda de la matriz
+
+                // Inicialmente se llena la celda con información básica
                 LL1table[i][j] = {
                     nonTerminal: actualRow,
                     terminal: tmpTerminal,
                 };
-                if(rowSymbols.includes(tmpTerminal)){
+
+                // Si el terminal actual pertenece al FIRST del no terminal,
+                // se busca la producción y se asigna a la celda
+                if (rowSymbols.includes(tmpTerminal)) {
                     let tmpRule = this.#searchProduction(tmpTerminal, rowRules);
                     Object.assign(LL1table[i][j], { production: tmpRule });
                     continue;
                 }
-                else if(rowSymbols.includes('Epsilon')) {
-                    if(rowFollows.includes(tmpTerminal)){
+                // Si en FIRST hay 'Epsilon', se debe revisar si el terminal actual
+                // pertenece a FOLLOW, para asignar la producción con 'Epsilon'
+                else if (rowSymbols.includes('Epsilon')) {
+                    if (rowFollows.includes(tmpTerminal)) {
                         Object.assign(LL1table[i][j], { production: ['Epsilon'] });
                         continue;
                     }
                 }
-                
+
+                // En caso de que no se cumpla ninguna de las condiciones anteriores,
+                // la celda se marca con producción null
                 Object.assign(LL1table[i][j], { production: null });
             }
         }
 
+        // Regresa la tabla LL1 ya construida
         return LL1table;
     }
 
