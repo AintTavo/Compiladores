@@ -30,7 +30,6 @@ class LL1{
 
             // Crea la tabla de la gramatica LL1 en base a los first y follow que haya encontrado
             this.ll1Table = this.#createLL1Table(this.parserOutput);
-
         }
         catch (error) {
             console.error(error);
@@ -329,7 +328,7 @@ class LL1{
                 // pertenece a FOLLOW, para asignar la producción con 'Epsilon'
                 else if (rowSymbols.includes('Epsilon')) {
                     if (rowFollows.includes(tmpTerminal)) {
-                        Object.assign(LL1table[i][j], { production: ['Epsilon'] });
+                        Object.assign(LL1table[i][j], { production: 'Epsilon' });
                         continue;
                     }
                 }
@@ -345,8 +344,69 @@ class LL1{
     }
 
     
+    // #########################################################################################################################################################
+    // Codigo para parser
 
-    parse () {
-        return;
+    #searchInLL1Table(inputnonTerminal, inputTerminal){
+        // Correcion de errores
+        if(!this.ll1Table){
+            console.error("The LL1 Table hasnt been calculated");
+            return;
+        }
+
+        for(const Fila of this.ll1Table){
+            for(const Columna of Fila){
+                if(inputnonTerminal === Columna.nonTerminal && inputTerminal === Columna.terminal){
+                    return Columna.production;
+                }
+            }
+        }
+
+    }
+    
+    parse(inputTokenArray) {
+        // Inicializacion de analisis
+        let LL1Stack = new Stack();
+        let LL1Queue = new Queue();
+        
+        for(const element of inputTokenArray){
+            LL1Queue.enqueue(element);
+        }
+        LL1Queue.enqueue('$');
+        LL1Stack.push('$');
+        LL1Stack.push(this.parserOutput.nonTerminals[0]);
+        
+        while(1){
+            let peek = LL1Stack.peek();
+            let front = LL1Queue.front();
+
+            if(peek === '$' && front === '$')
+                return true;
+
+            if(peek === '$' && front !== '$')
+                return false;
+
+            if(peek === front){
+                LL1Stack.pop();
+                LL1Queue.dequeue();
+                continue;
+            }
+
+            let actualProduction = this.#searchInLL1Table(peek, front);
+            if(actualProduction === null)
+                return false;
+            if(actualProduction === 'Epsilon'){
+                LL1Stack.pop();
+                continue;
+            }
+            else{
+                LL1Stack.pop();
+                actualProduction = [...actualProduction].reverse();
+                for(const element of actualProduction){
+                    LL1Stack.push(element);
+                }
+                continue;
+            }
+        }
     }
 }

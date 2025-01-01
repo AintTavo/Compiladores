@@ -5,8 +5,6 @@ let Lexer2 = new GramaticLexer(`
     <Holaxd> -> <d><c>; 
     `);
 
-let a = parseAndMarkTerminals(Lexer2);
-
 let ll1 = new LL1(`
     <E> -> <T><Ep>;
     <Ep> -> <Suma><T><Ep> | <Epsilon>;
@@ -15,7 +13,19 @@ let ll1 = new LL1(`
     <F> -> <id> | <ParIzq><E><ParDer>;
     
 `);
+console.log(ll1);
 
+let a = ll1.parse(['ParIzq','id','ParDer']);
+console.log(a);
+
+a = ll1.parse([]);
+console.log(a);
+
+a = ll1.parse(['ParIzq']);
+console.log(a);
+
+a = ll1.parse(['ParIzq','id','ParDer','suma','id']);
+console.log(a);
 
 console.log(ll1.ll1Table);
 
@@ -30,6 +40,13 @@ let ll1_2 = new LL1(`
 `);
 
 console.log(ll1_2);
+
+let ll1_3 = new LL1(`
+    <S> -> <a><A><B><b>;
+    <A> -> <c> | <Epsilon>;
+    <B> -> <d> | <Epsilon>;
+`);
+
 /*
 let tmpLexer;
 
