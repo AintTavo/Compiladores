@@ -351,7 +351,7 @@ class LL1{
         // Correcion de errores
         if(!this.ll1Table){
             console.error("The LL1 Table hasnt been calculated");
-            return;
+            return null;
         }
 
         for(const Fila of this.ll1Table){
@@ -361,10 +361,86 @@ class LL1{
                 }
             }
         }
+        return null;
+    }
 
+    parse(inputText){
+        //#######################################################################################################
+        //Definicion de las palabras reservadas
+        //#######################################################################################################
+        let tokens = moo.compile({
+            // Multi-character tokens
+            // Logicos
+            KLEENE_CL: /\#\*/,
+            POSITIV_CL: /\#\+/,
+            // Comparacion
+            EQ: /==/,
+            NEQ: /!=/,
+            LEQ: /<=/,
+            GEQ: />=/,
+
+            // Asignacion
+            PLUS_ASSIGN: /\+=/,
+            MINUS_ASSIGN: /-=/,
+            MULT_ASSIGN: /\*=/,
+            DIV_ASSIGN: /\/=/,
+            // Single-character operators
+            //Aritmeticos
+            PLUS: /\+/,
+            MULT: /\*/,
+            DIV: /\//,
+            MINUS: /-/,
+            POW: /\^/,
+            // Logicos
+            OR: /\|/,
+            AND: /&/,
+            OPCIONAL: /\?/,
+            // De agrupacion
+            L_PAREN: /\(/,
+            R_PAREN: /\)/,
+            L_BRACKET: /\[/,
+            R_BRACKET: /\]/,
+            L_BRACE: /\{/,
+            R_BRACE: /\}/,
+            // Fines de Linea
+            COMA: /,/,
+            SEMICOLON: /;/,
+            COLON: /:/,
+            // Comparacion
+            LT: /</,
+            GT: />/,
+            // Asignacion
+            ASSIGN: /=/,
+            // Numbers (integer and decimal)
+            NUM: /[0-9]+(?:\.[0-9]+)?/,
+            // Identifiers
+            ID: /[a-zA-Z]+/,
+            // Optional: Whitespace
+            WS: { match: /[ \t\n\r]+/, lineBreaks: true, ignore: true },
+            // Error handling
+            error: /./,
+        });
+
+        //Obtencion de los tokesn de la cadena
+        tokens.reset(inputText);
+
+        let token;
+        let tmpTokens = [];
+        while (token = tokens.next()) {
+            if (token.type === 'error') {
+                console.error(`Unexpected character: ${token.value}`);
+                return false;
+            }
+            if (token.type !== 'WS') {
+                tmpTokens = [...tmpTokens, token.type];
+            }
+
+        }
+        return this.#_parse(tmpTokens);
     }
     
-    parse(inputTokenArray) {
+    // Funcion para indicar si una 
+    #_parse(inputTokenArray) {
         // Inicializacion de analisis
         let LL1Stack = new Stack();
         let LL1Queue = new Queue();
@@ -377,30 +453,42 @@ class LL1{
         LL1Stack.push(this.parserOutput.nonTerminals[0]);
         
         while(1){
+            // Se guardan los siguientes valores en la pila y en la cola para determinar en los if como operar
             let peek = LL1Stack.peek();
             let front = LL1Queue.front();
 
+            // Si las dos pila y cola son $ regresa un true
             if(peek === '$' && front === '$')
                 return true;
 
+            // Si se llega a $ en la pila y no se ha llegado a $ en la cola se regrea false
             if(peek === '$' && front !== '$')
                 return false;
 
+            // Si el caracter siguiente en la cadena de entra es igual al caracter de la pila se quitan ambos de su respectiva estructura de datos
             if(peek === front){
                 LL1Stack.pop();
                 LL1Queue.dequeue();
                 continue;
             }
 
+            // Se busca la accion que llevar acabo en la tabla LL1 asociada al parser segun la gramatica con la que se construyo el objeto
             let actualProduction = this.#searchInLL1Table(peek, front);
+
+            // si al buscarlo en la tabla es null regresa falso
             if(actualProduction === null)
                 return false;
+
+            // si al buscarlo encuentra Epsilon quita el elemento de la pila y continua al siguiente ciclo
             if(actualProduction === 'Epsilon'){
                 LL1Stack.pop();
                 continue;
             }
             else{
+                // En caso de no ser epsilon popea de igual manera el dato siguiente
                 LL1Stack.pop();
+                // Invierte la regla de produccion como la regresa actualProduction que es de la forma de un arreglo
+                // [ a, b ,c , ...] y por medio  del operador de propagacion se invierten para luego agregar todos los elementos a la pila
                 actualProduction = [...actualProduction].reverse();
                 for(const element of actualProduction){
                     LL1Stack.push(element);

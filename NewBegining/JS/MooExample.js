@@ -7,27 +7,17 @@ let Lexer2 = new GramaticLexer(`
 
 let ll1 = new LL1(`
     <E> -> <T><Ep>;
-    <Ep> -> <Suma><T><Ep> | <Epsilon>;
+    <Ep> -> <PLUS><T><Ep> | <Epsilon>;
     <T> -> <F><Tp>;
-    <Tp> -> <Mult><F><Tp> | <Epsilon>;
-    <F> -> <id> | <ParIzq><E><ParDer>;
+    <Tp> -> <MULT><F><Tp> | <Epsilon>;
+    <F> -> <NUM> | <L_PAREN><E><R_PAREN>;
     
 `);
+let ll1Output = ll1.parse('2+(2)');
+console.log(ll1Output);
+
+
 console.log(ll1);
-
-let a = ll1.parse(['ParIzq','id','ParDer']);
-console.log(a);
-
-a = ll1.parse([]);
-console.log(a);
-
-a = ll1.parse(['ParIzq']);
-console.log(a);
-
-a = ll1.parse(['ParIzq','id','ParDer','suma','id']);
-console.log(a);
-
-console.log(ll1.ll1Table);
 
 let ll1_2 = new LL1(`
     <E> -> <T><Ep>;
