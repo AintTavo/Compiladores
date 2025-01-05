@@ -131,6 +131,44 @@ function annotateTerminals (ast, terminalsSet) {
     visit(ast);
 }
 
+function parseForLR0(inputText){
+    const ast = StartDescent(inputText);
+    if (!ast) {
+        console.error("Error: no se pudo parsear la entrada");
+        return null;
+    }
+    let firstRule = ast.rules[0].left;
+    let tmpRightSide = new RightSideNode([firstRule]);
+    let NombreStart = false;
+    for(const Rule of ast.rules){
+        if(Rule.left === 'Start')
+            NombreStart = true;
+        for(const Right of Rule.rights){
+            for(const symbol of Right.symbols){
+                if(symbol === 'Start')
+                    NombreStart = true;
+            }
+        }
+    }
+    let tmpRule
+    if(NombreStart)
+        tmpRule = new RuleNode('StartP',[tmpRightSide]);
+    else
+        tmpRule = new RuleNode('Start',[tmpRightSide]);
+
+    ast.rules = [tmpRule, ...ast.rules];
+    
+    // 2. Obtenemos los set (o arrays) de terminales y no terminales
+    const { terminals, nonTerminals } = postProcessAST(ast);
+
+    return {
+        ast: ast,
+        terminals: terminals,
+        nonTerminals: nonTerminals,
+    };
+}
+
+
 // ############################################################Funciones del desenso recursivo######################################################################
 // G -> Reglas
 function G() {

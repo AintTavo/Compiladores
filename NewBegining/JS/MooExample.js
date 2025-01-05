@@ -1,10 +1,17 @@
 //let Lexer = new GramaticLexer('<b> -> <a> | <c>;');
 //console.log(StartDescent(Lexer));
 
-let Lexer2 = new GramaticLexer(`
-    <Holaxd> -> <d><c>; 
-    `);
+let a = new LR0(`
+    <E> -> <T><Ep>;
+    <Ep> -> <PLUS><T><Ep> | <Epsilon>;
+    <T> -> <F><Tp>;
+    <Tp> -> <MULT><F><Tp> | <Epsilon>;
+    <F> -> <NUM> | <L_PAREN><E><R_PAREN>;
+    
+`);
+console.log(a);
 
+/*
 let ll1 = new LL1(`
     <E> -> <T><Ep>;
     <Ep> -> <PLUS><T><Ep> | <Epsilon>;
@@ -37,19 +44,4 @@ let ll1_3 = new LL1(`
     <B> -> <d> | <Epsilon>;
 `);
 
-/*
-let tmpLexer;
-
-while(!Lexer.tokenStack.isEmpty()){
-    tmpLexer = Lexer.yylex();
-    console.log(tmpLexer);
-    if(tmpLexer.value === '<a>'){
-        Lexer.undoToken();
-        Lexer.saveState();
-        Lexer.yylex();
-    }
-}
-
-Lexer.loadState();
-console.log(Lexer.yytry());
 */
