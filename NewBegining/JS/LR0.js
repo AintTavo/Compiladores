@@ -3,6 +3,7 @@ class LR0 {
     nonTerminals = [];
     terminals = [];
     #analisisRules = [];
+    
 
     constructor(input) {
         // 1) Construir gramática y reglas con punto
@@ -11,6 +12,7 @@ class LR0 {
         this.#analisisRules = Rules.forAnalisisItems;
         this.nonTerminals = Rules.nonTerminals;
         this.terminals = Rules.terminals;
+        this.log = [];
 
         // 2) Construir autómata LR(0)
         this.states = [];
@@ -182,62 +184,62 @@ class LR0 {
     }
 
     #buildLR0Table() {
-        // 1) Definir las columnas
+        // 1) Definir las columnas (terminales y no terminales)
         const allSymbols = [...this.terminals, ...this.nonTerminals];
-
-        // 2) Mapa símbolo → índice de columna
+    
+        // 2) Crear un índice de símbolos (terminales y no terminales)
         let symbolIndex = {};
         allSymbols.forEach((sym, i) => symbolIndex[sym] = i);
-
-        // 3) Crear la matriz de la tabla
-        this.lr0Table = new Array(this.states.length);
-        for (let i = 0; i < this.states.length; i++) {
-            this.lr0Table[i] = new Array(allSymbols.length);
-            // Inicializar celdas
-            for (let col = 0; col < allSymbols.length; col++) {
-                this.lr0Table[i][col] = {
-                    StateIndex: null,
-                    Symbolo: allSymbols[col],
-                    TipoDeProduccion: null,
-                    Regla: null
-                };
-            }
-        }
-
-        // 4) Llenar SHIFT o GOTO según transitions
+    
+        // 3) Crear la matriz de la tabla LR(0)
+        this.lr0Table = Array.from({ length: this.states.length }, () =>
+            Array.from({ length: allSymbols.length }, () => ({
+                StateIndex: null,
+                Symbolo: null,
+                TipoDeProduccion: null,
+                Regla: null
+            }))
+        );
+    
+        // 4) Llenar las transiciones Shift y Goto
         for (let i = 0; i < this.states.length; i++) {
             for (let symbol in this.transitions[i]) {
                 let nextState = this.transitions[i][symbol];
                 let col = symbolIndex[symbol];
                 if (col === undefined) {
-                    console.warn('Símbolo ${symbol} no está en symbolIndex');
+                    console.warn(`Símbolo ${symbol} no está en el índice.`);
                     continue;
                 }
+    
                 if (this.nonTerminals.includes(symbol)) {
-                    // GOTO
-                    this.lr0Table[i][col].StateIndex = nextState;
-                    this.lr0Table[i][col].TipoDeProduccion = "Goto";
+                    this.lr0Table[i][col] = {
+                        StateIndex: nextState,
+                        Symbolo: symbol,
+                        TipoDeProduccion: "Goto"
+                    };
                 } else {
-                    // SHIFT
-                    this.lr0Table[i][col].StateIndex = nextState;
-                    this.lr0Table[i][col].TipoDeProduccion = "Shift";
+                    this.lr0Table[i][col] = {
+                        StateIndex: nextState,
+                        Symbolo: symbol,
+                        TipoDeProduccion: "Shift"
+                    };
                 }
             }
         }
-
-        // 5) Llenar REDUCE o ACCEPT
+    
+        // 5) Llenar las acciones Reduce y Accept
         for (let i = 0; i < this.states.length; i++) {
             for (let item of this.states[i]) {
                 let dotIndex = item.right.indexOf('.');
+    
                 if (dotIndex === item.right.length - 1) {
-                    // A -> α .
+                    // Regla completada (Reduce o Accept)
                     let prodLeft = item.left;
                     let prodRight = [...item.right];
-                    prodRight.splice(dotIndex, 1); // remove '.'
-
-                    // Si la producción es "Start -> algo."
+                    prodRight.splice(dotIndex, 1); // Eliminar el punto
+    
                     if (prodLeft === "Start") {
-                        // Accept en la columna '$'
+                        // Si es la regla de aceptación
                         let colDollar = symbolIndex['$'];
                         if (colDollar !== undefined) {
                             this.lr0Table[i][colDollar] = {
@@ -248,7 +250,7 @@ class LR0 {
                             };
                         }
                     } else {
-                        // LR(0) canónico => reduce en TODOS los terminales (incl. '$')
+                        // Si es una regla de reducción
                         for (let t of this.terminals) {
                             let colTerm = symbolIndex[t];
                             if (colTerm !== undefined) {
@@ -260,25 +262,80 @@ class LR0 {
                                 };
                             }
                         }
+    
+                        // Agregar Reduce para el símbolo '$'
+                        let colDollar = symbolIndex['$'];
+                        if (colDollar !== undefined) {
+                            this.lr0Table[i][colDollar] = {
+                                StateIndex: null,
+                                Symbolo: '$',
+                                TipoDeProduccion: "Reduce",
+                                Regla: { left: prodLeft, right: prodRight }
+                            };
+                        }
                     }
                 }
             }
         }
-
-        // **GUARDAMOS** el symbolIndex para usarlo en #_parse
+    
+        // Guardar el índice de símbolos para referencia
         this.symbolIndex = symbolIndex;
+        console.log("Tabla LR(0) construida correctamente:", this.lr0Table);
     }
+    
 
     parse(inputText) {
         // Ajusta tus tokens según tu gramática
         let tokens = moo.compile({
-            L_PAREN: /\(/,
-            R_PAREN: /\)/,
+            // Multi-character tokens
+            // Logicos
+            KLEENE_CL: /\#\*/,
+            POSITIV_CL: /\#\+/,
+            // Comparacion
+            EQ: /==/,
+            NEQ: /!=/,
+            LEQ: /<=/,
+            GEQ: />=/,
+
+            // Asignacion
+            PLUS_ASSIGN: /\+=/,
+            MINUS_ASSIGN: /-=/,
+            MULT_ASSIGN: /\*=/,
+            DIV_ASSIGN: /\/=/,
+            // Single-character operators
+            //Aritmeticos
             PLUS: /\+/,
             MULT: /\*/,
-            NUM: /[0-9]+/,
-            // ...
+            DIV: /\//,
+            MINUS: /-/,
+            POW: /\^/,
+            // Logicos
+            OR: /\|/,
+            AND: /&/,
+            OPCIONAL: /\?/,
+            // De agrupacion
+            L_PAREN: /\(/,
+            R_PAREN: /\)/,
+            L_BRACKET: /\[/,
+            R_BRACKET: /\]/,
+            L_BRACE: /\{/,
+            R_BRACE: /\}/,
+            // Fines de Linea
+            COMA: /,/,
+            SEMICOLON: /;/,
+            COLON: /:/,
+            // Comparacion
+            LT: /</,
+            GT: />/,
+            // Asignacion
+            ASSIGN: /=/,
+            // Numbers (integer and decimal)
+            NUM: /[0-9]+(?:\.[0-9]+)?/,
+            // Identifiers
+            ID: /[a-zA-Z]+/,
+            // Optional: Whitespace
             WS: { match: /[ \t\n\r]+/, lineBreaks: true, ignore: true },
+            // Error handling
             error: /./,
         });
 
@@ -364,6 +421,164 @@ class LR0 {
             }
         }
     }
+    parseStepByStep(inputText) {
+        let tokens = moo.compile({
+            KLEENE_CL: /\#\*/,
+            POSITIV_CL: /\#\+/,
+            EQ: /==/,
+            NEQ: /!=/,
+            LEQ: /<=/,
+            GEQ: />=/,
+            PLUS_ASSIGN: /\+=/,
+            MINUS_ASSIGN: /-=/,
+            MULT_ASSIGN: /\*=/,
+            DIV_ASSIGN: /\/=/,
+            PLUS: /\+/,
+            MULT: /\*/,
+            DIV: /\//,
+            MINUS: /-/,
+            POW: /\^/,
+            OR: /\|/,
+            AND: /&/,
+            OPCIONAL: /\?/,
+            L_PAREN: /\(/,
+            R_PAREN: /\)/,
+            L_BRACKET: /\[/,
+            R_BRACKET: /\]/,
+            L_BRACE: /\{/,
+            R_BRACE: /\}/,
+            COMA: /,/,
+            SEMICOLON: /;/,
+            COLON: /:/,
+            LT: /</,
+            GT: />/,
+            ASSIGN: /=/,
+            NUM: /[0-9]+(?:\.[0-9]+)?/,
+            ID: /[a-zA-Z]+/,
+            WS: { match: /[ \t\n\r]+/, lineBreaks: true, ignore: true },
+            error: /./,
+        });
+    
+        tokens.reset(inputText);
+    
+        let token;
+        let tmpTokens = [];
+        while ((token = tokens.next())) {
+            if (token.type === 'error') {
+                console.error(`Unexpected character: ${token.value}`);
+                return false;
+            }
+            if (token.type !== 'WS') {
+                tmpTokens.push(token.type);
+            }
+        }
+        tmpTokens.push('$');
+    
+        return this.#_parseStepByStep(tmpTokens);
+    }
+    
+    #_parseStepByStep(tokensArray) {
+        let stack = [0]; // Iniciamos con el estado 0
+        let idx = 0;
+        let currentToken = tokensArray[idx];
+        this.log = []; // Limpiamos el registro de logs antes de empezar
+    
+        console.log("Inicio del análisis LR(0):");
+    
+        while (true) {
+            let state = stack[stack.length - 1];
+            let col = this.symbolIndex[currentToken];
+    
+            if (col === undefined) {
+                console.error(`Token ${currentToken} no existe en symbolIndex`);
+                this.log.push({
+                    pila: [...stack],
+                    tokenActual: currentToken,
+                    accion: "Error",
+                    detalle: `Token no existe en symbolIndex`
+                });
+                return false;
+            }
+    
+            let actionCell = this.lr0Table[state][col];
+            if (!actionCell || actionCell.TipoDeProduccion === null) {
+                console.error(`No hay acción para (estado = ${state}, token = ${currentToken})`);
+                this.log.push({
+                    pila: [...stack],
+                    tokenActual: currentToken,
+                    accion: "Error",
+                    detalle: `No hay acción para este estado y token`
+                });
+                return false;
+            }
+    
+            let stepLog = {
+                pila: [...stack],
+                tokenActual: currentToken,
+                accion: actionCell.TipoDeProduccion,
+            };
+    
+            switch (actionCell.TipoDeProduccion) {
+                case 'Shift': {
+                    stack.push(actionCell.StateIndex);
+                    idx++;
+                    currentToken = tokensArray[idx];
+                    stepLog.detalle = `Desplazar y avanzar a estado ${actionCell.StateIndex}`;
+                    this.log.push(stepLog);
+                    break;
+                }
+                case 'Goto': {
+                    stack.push(actionCell.StateIndex);
+                    stepLog.detalle = `Ir a estado ${actionCell.StateIndex}`;
+                    this.log.push(stepLog);
+                    break;
+                }
+                case 'Reduce': {
+                    let { left, right } = actionCell.Regla;
+                    let alphaLength = right.length;
+                    for (let i = 0; i < alphaLength; i++) {
+                        stack.pop();
+                    }
+                    let topState = stack[stack.length - 1];
+                    let gotoCol = this.symbolIndex[left];
+                    if (gotoCol === undefined) {
+                        console.error(`No existe gotoCol para ${left}`);
+                        stepLog.accion = "Error";
+                        stepLog.detalle = `No existe gotoCol para ${left}`;
+                        this.log.push(stepLog);
+                        return false;
+                    }
+                    let gotoCell = this.lr0Table[topState][gotoCol];
+                    if (!gotoCell || gotoCell.TipoDeProduccion !== 'Goto') {
+                        console.error(`No hay goto en (estado = ${topState}, simbolo = ${left})`);
+                        stepLog.accion = "Error";
+                        stepLog.detalle = `No hay goto en (estado = ${topState}, simbolo = ${left})`;
+                        this.log.push(stepLog);
+                        return false;
+                    }
+                    stack.push(gotoCell.StateIndex);
+                    stepLog.detalle = `Reducir por regla ${left} → ${right.join(' ')}`;
+                    this.log.push(stepLog);
+                    break;
+                }
+                case 'Accept': {
+                    console.log("✅ Cadena válida sintácticamente (LR(0) ACCEPT).");
+                    stepLog.detalle = "Cadena aceptada.";
+                    this.log.push(stepLog);
+                    return true;
+                }
+                default: {
+                    console.error(`Acción desconocida: ${actionCell.TipoDeProduccion}`);
+                    stepLog.accion = "Error";
+                    stepLog.detalle = `Acción desconocida: ${actionCell.TipoDeProduccion}`;
+                    this.log.push(stepLog);
+                    return false;
+                }
+            }
+        }
+    }
+    
+    
 }
 
 class GramaticItems {

@@ -19,6 +19,7 @@ console.log(aux);
 
 
 
+
 let ll1_2 = new LL1(`
     <E> -> <T><Ep>;
     <Ep> -> <or><T><Ep> | <Epsilon>;
@@ -28,6 +29,9 @@ let ll1_2 = new LL1(`
     <Cp> -> <CerrPos><Cp> | <CerrKleene><Cp> | <Opcional><Cp> | <Epsilon>;
     <F> -> <simb> | <ParIzq><E><ParDer>;
 `);
+
+
+
 
 console.log(ll1_2);
 
