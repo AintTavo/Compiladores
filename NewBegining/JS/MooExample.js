@@ -1,30 +1,23 @@
 //let Lexer = new GramaticLexer('<b> -> <a> | <c>;');
 //console.log(StartDescent(Lexer));
 
+// -------------------------------------------
+// EJEMPLO DE USO
+// -------------------------------------------
+//let Lexer = new GramaticLexer('<b> -> <a> | <c>;');
+//console.log(StartDescent(Lexer));
+
 let a = new LR0(`
     <E> -> <T><Ep>;
     <Ep> -> <PLUS><T><Ep> | <Epsilon>;
     <T> -> <F><Tp>;
     <Tp> -> <MULT><F><Tp> | <Epsilon>;
-    <F> -> <NUM> | <L_PAREN><E><R_PAREN>;
-    
+    <F> -> <L_PAREN><E><R_PAREN> | <NUM>;
 `);
-console.log(a);
-
-/*
-let ll1 = new LL1(`
-    <E> -> <T><Ep>;
-    <Ep> -> <PLUS><T><Ep> | <Epsilon>;
-    <T> -> <F><Tp>;
-    <Tp> -> <MULT><F><Tp> | <Epsilon>;
-    <F> -> <NUM> | <L_PAREN><E><R_PAREN>;
-    
-`);
-let ll1Output = ll1.parse('2+(2)');
-console.log(ll1Output);
+let aux = a.parse("2 * 5");
+console.log(aux);
 
 
-console.log(ll1);
 
 let ll1_2 = new LL1(`
     <E> -> <T><Ep>;
@@ -44,4 +37,3 @@ let ll1_3 = new LL1(`
     <B> -> <d> | <Epsilon>;
 `);
 
-*/

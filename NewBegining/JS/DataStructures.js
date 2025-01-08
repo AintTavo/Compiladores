@@ -38,6 +38,10 @@ class Stack {
         newStack.items = [...this.items];
         return newStack;
     }
+
+    join(separator = " ") {
+        return this.items.join(separator);
+    }
 }
 
 
@@ -73,5 +77,9 @@ class Queue{
 
     clear() {
         this.items = [];
+    }
+
+    join(separator = " ") {
+        return this.items.join(separator);
     }
 }

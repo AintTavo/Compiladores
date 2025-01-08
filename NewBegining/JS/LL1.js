@@ -4,6 +4,7 @@ class LL1{
     followList = [];
     // Es una cadena ya procesada y postprocesada por las funciones de Recursive.js
     parserOutput;
+    parserlog = [];
 
     // Es el constructor de la clase con un input sea Lexer o una simple cadena como estan definidas en lexer
     // genera los first los follow y la tabla LL1
@@ -444,6 +445,7 @@ class LL1{
         // Inicializacion de analisis
         let LL1Stack = new Stack();
         let LL1Queue = new Queue();
+        this.parserlog = [];
         
         for(const element of inputTokenArray){
             LL1Queue.enqueue(element);
@@ -458,15 +460,33 @@ class LL1{
             let front = LL1Queue.front();
 
             // Si las dos pila y cola son $ regresa un true
-            if(peek === '$' && front === '$')
+            if(peek === '$' && front === '$'){
+                this.parserlog = [...this.parserlog, {
+                    stack: LL1Stack.join(" "),
+                    queue: LL1Queue.join(" "),
+                    action: 'Acept'
+                }];
                 return true;
+            }
+                
 
             // Si se llega a $ en la pila y no se ha llegado a $ en la cola se regrea false
-            if(peek === '$' && front !== '$')
+            if(peek === '$' && front !== '$'){
+                this.parserlog = [...this.parserlog, {
+                    stack: LL1Stack.join(" "),
+                    queue: LL1Queue.join(" "),
+                    action: 'Reject'
+                }];
                 return false;
-
+            }
+            
             // Si el caracter siguiente en la cadena de entra es igual al caracter de la pila se quitan ambos de su respectiva estructura de datos
             if(peek === front){
+                this.parserlog = [...this.parserlog, {
+                    stack: LL1Stack.join(" "),
+                    queue: LL1Queue.join(" "),
+                    action: 'pop',
+                }];
                 LL1Stack.pop();
                 LL1Queue.dequeue();
                 continue;
@@ -476,23 +496,42 @@ class LL1{
             let actualProduction = this.#searchInLL1Table(peek, front);
 
             // si al buscarlo en la tabla es null regresa falso
-            if(actualProduction === null)
+            if(actualProduction === null){
+                this.parserlog = [...this.parserlog, {
+                    stack: LL1Stack.join(" "),
+                    queue: LL1Queue.join(" "),
+                    action: 'Reject',
+                }];
                 return false;
+            }
 
             // si al buscarlo encuentra Epsilon quita el elemento de la pila y continua al siguiente ciclo
             if(actualProduction === 'Epsilon'){
+                this.parserlog = [...this.parserlog, {
+                    stack: LL1Stack.join(" "),
+                    queue: LL1Queue.join(" "),
+                    action: 'Reject',
+                }];
                 LL1Stack.pop();
                 continue;
             }
             else{
+                let action = `${peek} → ${actualProduction.join(" ")}`;
+                this.parserlog = [...this.parserlog, {
+                    stack: LL1Stack.join(" "),
+                    queue: LL1Queue.join(" "),
+                    action: action,
+                }];
                 // En caso de no ser epsilon popea de igual manera el dato siguiente
                 LL1Stack.pop();
                 // Invierte la regla de produccion como la regresa actualProduction que es de la forma de un arreglo
                 // [ a, b ,c , ...] y por medio  del operador de propagacion se invierten para luego agregar todos los elementos a la pila
+                
                 actualProduction = [...actualProduction].reverse();
                 for(const element of actualProduction){
                     LL1Stack.push(element);
                 }
+                
                 continue;
             }
         }

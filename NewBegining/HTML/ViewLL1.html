@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!--############################################################Hojas de eestilos######################################################################-->
+    <link rel="stylesheet" href="../Libraries/bootstrap-5.3.3-dist/css//bootstrap.min.css">
+    <link rel="stylesheet" href="../Libraries/fontawesome-free-6.6.0-web/css/all.css">
+    <link rel="stylesheet" href="../Libraries/SweetAlert2/sweetalert2.min.css">
+    <link rel="stylesheet" href="../CSS/ViewLL1.css">
+
+    <!--###########################################################Librerias en JS########################################################################-->
+    <script src="../Libraries/bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
+    <script src="../Libraries/fontawesome-free-6.6.0-web/js/all.js"></script>
+    <script src="../Libraries/SweetAlert2/sweetalert2.all.min.js"></script>
+    <script src="../Libraries/jquery-3.7.1.min.js"></script>
+    <script src="../Libraries/moo-0.5.2/moo-0.5.2/moo.js"></script>
+
+    <script src="../JS/DataStructures.js" defer></script>
+    <script src="../JS/Lexer.js" defer></script>
+    <script src="../JS/Rules.js" defer></script>
+    <script src="../JS/Recursive.js" defer></script>
+    <script src="../JS/LL1.js" defer></script>
+
+
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <h1 class="text-center col-12">Analizador Gramatical LL1</h1>
+            <div class="col-6" id="CuadrosDeTexto">
+                <label for="grammar-input" class="text-center col-12">Introduce la gramática:</label>
+                <textarea id="grammar-input" class="col-12 w-100">&lt;b&gt; -&gt; &lt;a&gt; | &lt;c&gt;;</textarea>
+                <button id="AnalisisGramatica" class="btn btn-info col-12" onclick="runAnalysis()">Analizar Gramatica</button>
+                <div id="result" class="text-center" style="display: none;"></div>
+            </div>
+
+            <div class="col-6" id="EntradaAlLL1">
+                <label for="LL1-input" class="text-center col-12"> Introduce una cadena a validar:</label>
+                <textarea id="LL1-input" class="col-12 w-100"></textarea>
+                <button id="RunLL1Analisis" class="btn btn-info col-12">Analizar Cadena</button>
+                <div id="result_LL1" class="text-center" style="display: none;"></div>
+            </div>
+        </div>
+        <div class="row py-4">
+            <div class="col-12" id="tabla"></div>
+        </div>
+        <div class="row py-4">
+            <div class="col-12" id="logs"></div>
+        </div>
+        
+    </div>
+    
+    <footer>
+        <!--###########################################################Scripst con DOM######################################################################-->
+        <script src="../JS/ViewLL1.js" defer></script>
+    </footer>
+</body>
+</html>

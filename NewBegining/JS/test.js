@@ -6,9 +6,12 @@ function runAnalysis() {
     const lexer = new GramaticLexer(inputText);
     const isValid = parseAndMarkTerminals(lexer);
 
-    resultDiv.textContent = isValid
-      ? "✅ ¡La gramática es válida!"
-      : "❌ La gramática es inválida.";
+    if(isValid){
+      resultDiv.textContent = "✅ ¡La gramática es válida!";
+    }
+    else{
+      resultDiv.textContent = "❌ La gramática es inválida.";
+    }
     resultDiv.className = isValid ? "" : "error";
     resultDiv.style.display = "block";
   } catch (error) {
