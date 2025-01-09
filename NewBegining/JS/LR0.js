@@ -288,6 +288,14 @@ class LR0 {
         // Ajusta tus tokens según tu gramática
         let tokens = moo.compile({
             // Multi-character tokens
+            ARROW: /->/,
+            G_STATEMENT: {                 // Reglas de la gramática
+                match: /<[a-zA-Z][a-zA-Z0-9_]*>/,
+                value: (text) => {
+                    return text.slice(1, -1);
+                },
+            },
+            //
             // Logicos
             KLEENE_CL: /\#\*/,
             POSITIV_CL: /\#\+/,
@@ -423,6 +431,14 @@ class LR0 {
     }
     parseStepByStep(inputText) {
         let tokens = moo.compile({
+            ARROW: /->/,
+            G_STATEMENT: {                 // Reglas de la gramática
+                match: /<[a-zA-Z][a-zA-Z0-9_]*>/,
+                value: (text) => {
+                    return text.slice(1, -1);
+                },
+            },
+            //
             KLEENE_CL: /\#\*/,
             POSITIV_CL: /\#\+/,
             EQ: /==/,

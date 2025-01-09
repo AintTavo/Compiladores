@@ -253,21 +253,43 @@ class LL1{
  * en base a un terminal de entrada (inputTerminal). Devuelve un Set con los símbolos de la producción
  * encontrada o null si no la encuentra.
  */
-    #searchProduction(inputTerminal, Rules) {
+    #searchProduction(inputTerminal, inputNonTerminal, Rules) {
         let Result = new Set();   // Para almacenar la producción resultante
         let foundRule;           // Se usará para guardar la regla (o 'Right') que coincida
 
         // Si solo hay una regla en 'Rules', se asume esa por defecto
         if (Rules.length === 1) {
             foundRule = Rules[0].symbols;
-        }
-        else {
+        } else {
             // Si hay varias reglas, se recorre cada 'Right' en busca de la que coincida
             // con el primer símbolo igual a 'inputTerminal'
             for (const Right of Rules) {
-                if (Right.symbols[0].value === inputTerminal)
-                    foundRule = Right.symbols;
+                for (const Symbol of Right.symbols) {
+                    if (Symbol.value === inputTerminal) {
+                        foundRule = Right.symbols;
+                        break;
+                    }
+                }
             }
+        }
+
+        // Si no se encuentra una regla, buscar en los FIRST de las reglas
+        if (!foundRule) {
+            for (const Right of Rules) {
+
+                if (this.#searchInFirst(inputNonTerminal)) {
+                    foundRule = Right.symbols; // Usa la primera regla cuyo FIRST contiene el símbolo buscado
+                    break;
+                }
+            }
+        }
+
+        // Si aún no se encuentra una regla, maneja el error
+        if (!foundRule) {
+            console.log(`Input Terminal: ${inputTerminal}`);
+            console.log(`Rules:`, Rules);
+            console.error("No matching rule found for the inputTerminal");
+            return null;
         }
 
         // Se convierte la regla encontrada en un conjunto de valores de los símbolos
@@ -276,8 +298,9 @@ class LL1{
         }
 
         // Si se encontraron símbolos, se retornan. De lo contrario, se devuelve null.
-        if (Result.length > 0)
+        if (Result.length > 0) {
             return Result;
+        }
         return null;
     }
 
@@ -321,7 +344,7 @@ class LL1{
                 // Si el terminal actual pertenece al FIRST del no terminal,
                 // se busca la producción y se asigna a la celda
                 if (rowSymbols.includes(tmpTerminal)) {
-                    let tmpRule = this.#searchProduction(tmpTerminal, rowRules);
+                    let tmpRule = this.#searchProduction(tmpTerminal,actualRow, rowRules);
                     Object.assign(LL1table[i][j], { production: tmpRule });
                     continue;
                 }
@@ -371,6 +394,13 @@ class LL1{
         //#######################################################################################################
         let tokens = moo.compile({
             // Multi-character tokens
+            ARROW: /->/,   
+            G_STATEMENT: {                 // Reglas de la gramática
+                match: /<[a-zA-Z][a-zA-Z0-9_]*>/,
+                value: (text) => {
+                    return text.slice(1, -1);
+                },
+            }, 
             // Logicos
             KLEENE_CL: /\#\*/,
             POSITIV_CL: /\#\+/,
@@ -507,10 +537,11 @@ class LL1{
 
             // si al buscarlo encuentra Epsilon quita el elemento de la pila y continua al siguiente ciclo
             if(actualProduction === 'Epsilon'){
+                let action = `${peek} → ε`;
                 this.parserlog = [...this.parserlog, {
                     stack: LL1Stack.join(" "),
                     queue: LL1Queue.join(" "),
-                    action: 'Reject',
+                    action: action,
                 }];
                 LL1Stack.pop();
                 continue;

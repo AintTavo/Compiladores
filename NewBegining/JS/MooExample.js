@@ -22,12 +22,12 @@ console.log(aux);
 
 let ll1_2 = new LL1(`
     <E> -> <T><Ep>;
-    <Ep> -> <or><T><Ep> | <Epsilon>;
+    <Ep> -> <OR><T><Ep> | <Epsilon>;
     <T> -> <C><Tp>;
-    <Tp> -> <and><C><Tp> | <Epsilon>;
+    <Tp> -> <AND><C><Tp> | <Epsilon>;
     <C> -> <F><Cp>;
-    <Cp> -> <CerrPos><Cp> | <CerrKleene><Cp> | <Opcional><Cp> | <Epsilon>;
-    <F> -> <simb> | <ParIzq><E><ParDer>;
+    <Cp> -> <POSITIV_CL><Cp> | <KLEENE_CL><Cp> | <OPCIONAL><Cp> | <Epsilon>;
+    <F> -> <ID> | <L_PAREN><E><R_PAREN>;
 `);
 
 
@@ -41,3 +41,15 @@ let ll1_3 = new LL1(`
     <B> -> <d> | <Epsilon>;
 `);
 
+let ll1_Prof = new LL1(`
+    <G> -> <ListaDeReglas>;
+    <ListaDeReglas> -> <Reglas> <SEMICOLON> <ListaDeReglasP>;
+    <ListaDeReglasP> -> <Reglas> <SEMICOLON> <ListaDeReglasP> | <Epsilon>;
+    <Reglas> -> <LadoIzquierdo> <ARROW> <LadosDerechos>;
+    <LadoIzquierdo> -> <G_STATEMENT>;
+    <LadosDerechos> -> <LadoDerecho> <LadosDerechosP>;
+    <LadosDerechosP> -> <OR> <LadoDerecho> <LadosDerechosP> | <Epsilon>;
+    <LadoDerecho> -> <SecSimbolos>;
+    <SecSimbolos> -> <G_STATEMENT> <SecSimbolosP>;
+    <SecSimbolosP> -> <G_STATEMENT> <SecSimbolosP> | <Epsilon>;
+`);

@@ -1,5 +1,19 @@
 let ll1 = new LL1('<a>-><ID>;');
 
+let ll1_Prof = new LL1(`
+    <G> -> <ListaDeReglas>;
+    <ListaDeReglas> -> <Reglas> <SEMICOLON> <ListaDeReglasP>;
+    <ListaDeReglasP> -> <Reglas> <SEMICOLON> <ListaDeReglasP> | <Epsilon>;
+    <Reglas> -> <LadoIzquierdo> <ARROW> <LadosDerechos>;
+    <LadoIzquierdo> -> <G_STATEMENT>;
+    <LadosDerechos> -> <LadoDerecho> <LadosDerechosP>;
+    <LadosDerechosP> -> <OR> <LadoDerecho> <LadosDerechosP> | <Epsilon>;
+    <LadoDerecho> -> <SecSimbolos>;
+    <SecSimbolos> -> <G_STATEMENT> <SecSimbolosP>;
+    <SecSimbolosP> -> <G_STATEMENT> <SecSimbolosP> | <Epsilon>;
+`);
+console.log(ll1_Prof);
+
 function runAnalysis() {
     const inputText = $("#grammar-input").val();
     const resultDiv = $("#result");
@@ -161,7 +175,7 @@ function generateLog(){
         $("#logs").html(""); // Si no hay datos, limpiar tabla
         return;
     }
-    let LogsHTML = '<table class="table table-bordered"><thead><tr><td>Pila</td><td>Cadeana por analizar</td><td>Acción</td></tr></thead><tbody>';
+    let LogsHTML = '<table class="table table-bordered"><thead><tr><td>Pila</td><td>Cadena por analizar</td><td>Acción</td></tr></thead><tbody>';
     for(const log of ll1.parserlog){
         LogsHTML += `
         <tr>
